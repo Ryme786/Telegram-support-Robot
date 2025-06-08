@@ -1,9 +1,26 @@
 import os
-from telegram import Update, Bot
+import threading
+from flask import Flask
+from telegram import Update
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
+# --- Flask App (for Render Health Check) ---
+app = Flask(__name__)
+@app.route('/')
+def index():
+    return "I am alive!"
+
+def run_flask_app():
+    # The host must be '0.0.0.0' to be accessible by Render
+    # The port is dynamically assigned by Render, so we use os.environ.get('PORT')
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
+# ---------------------------------------------
+
+
+# --- Telegram Bot Code ---
 # Your bot's API token from BotFather
-TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
+TOKEN = os.environ.get("7873063854:AAE6xzE3L4MzVWsCnunnVgqqda64lRbBU4M")
 # Your private channel ID
 CHANNEL_ID = os.environ.get("-1002811758365")
 
@@ -24,14 +41,15 @@ def start(update: Update, context: CallbackContext) -> None:
 def handle_lakshya(update: Update, context: CallbackContext) -> None:
     update.message.reply_text(LAKSHYA_REPLY)
     # Forward the user's message to your channel
-    context.bot.forward_message(chat_id=CHANNEL_ID, from_chat_id=update.message.chat_id, message_id=update.message.message_id)
-
+    if CHANNEL_ID:
+        context.bot.forward_message(chat_id=CHANNEL_ID, from_chat_id=update.message.chat_id, message_id=update.message.message_id)
 
 def handle_message(update: Update, context: CallbackContext) -> None:
     # Forward the user's message to your channel
-    context.bot.forward_message(chat_id=CHANNEL_ID, from_chat_id=update.message.chat_id, message_id=update.message.message_id)
+    if CHANNEL_ID:
+        context.bot.forward_message(chat_id=CHANNEL_ID, from_chat_id=update.message.chat_id, message_id=update.message.message_id)
 
-def main() -> None:
+def run_telegram_bot():
     updater = Updater(TOKEN)
     dispatcher = updater.dispatcher
 
@@ -41,6 +59,15 @@ def main() -> None:
 
     updater.start_polling()
     updater.idle()
+# ---------------------------------------------
 
+
+# --- Main execution ---
 if __name__ == '__main__':
-    main()
+    # Run Flask app in a separate thread
+    flask_thread = threading.Thread(target=run_flask_app)
+    flask_thread.start()
+
+    # Run Telegram bot in the main thread
+    run_telegram_bot()
+    
