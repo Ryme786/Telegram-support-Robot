@@ -20,9 +20,9 @@ def run_flask_app():
 
 # --- Telegram Bot Code ---
 # Your bot's API token from BotFather
-TOKEN = os.environ.get("7873063854:AAE6xzE3L4MzVWsCnunnVgqqda64lRbBU4M")
+TOKEN = os.environ.get(":")
 # Your private channel ID
-CHANNEL_ID = os.environ.get("-1002811758365")
+CHANNEL_ID = os.environ.get("-1002843399419")
 
 # The specific reply for the 'lakshya' keyword
 LAKSHYA_REPLY = """
